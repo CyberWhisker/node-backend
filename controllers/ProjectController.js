@@ -1,11 +1,15 @@
 const Model = require('../models/ProjectModel')
+const FileUpload = require('../utils/FileUploadUtil')
 
 const storeData = async (req, res) => {
     const { ...rest } = req.body
     let newData = rest;
     try {
         if (req.file) {
-            newData.image = `/projectImg/${req.file.filename}`
+            const savedFileId = await FileUpload.processAndSaveFile(req.file)
+            const baseUrl = `${req.protocol}://${req.get('host')}`;
+            const fileUrl = `${baseUrl}/file/${savedFileId}`;
+            newData.image = fileUrl
         }
         const data = await Model.create(newData)
         res.status(200).json(data)
@@ -21,7 +25,10 @@ const updateData = async (req, res) => {
     let newData = rest;
     try {
         if (req.file) {
-            newData.image = `/projectImg/${req.file.filename}`
+            const savedFileId = await FileUpload.processAndSaveFile(req.file)
+            const baseUrl = `${req.protocol}://${req.get('host')}`;
+            const fileUrl = `${baseUrl}/file/${savedFileId}`;
+            newData.image = fileUrl
         }
         const data = await Model.findByIdAndUpdate(id, newData)
         res.status(200).json(data)

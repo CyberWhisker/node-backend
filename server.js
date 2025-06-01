@@ -1,41 +1,47 @@
-require('dotenv').config()
-
-const express = require('express')
-const mongoose = require('mongoose')
-
-// File Route Location
-const UserRoutes = require('./routes/user')
-const TechStackRoutes = require('./routes/techStack')
-const ProjectRoutes = require('./routes/project')
-const ExperienceRoutes = require('./routes/experience')
-
-const port = process.env.PORT
-
-// Express app
-const app = express()
-
-// Enable CORS
+require('dotenv').config();
+const express = require('express');
+const mongoose = require('mongoose');
+const http = require('http');
 const cors = require('cors');
 
-//Security
-app.use(cors({
-    // origin: 'http://localhost:5173',
-    origin: '*',
-}));
+const { setupSocket } = require('./sockets'); // 👈 Import your socket setup
+
+// Constants
+const port = process.env.PORT || 5000;
+const mongoUri = process.env.MONGO_URI;
+
+// Create Express app
+const app = express();
+const server = http.createServer(app);
 
 // Middleware
-app.use(express.json())
+app.use(cors(
+    {
+        origin: '*', methods: ['GET', 'POST', 'DELETE', 'PATCH']
 
-// Routes
-app.use('/api/user', UserRoutes)
-app.use('/api/techStack', TechStackRoutes)
-app.use('/api/project', ProjectRoutes)
-app.use('/api/experience', ExperienceRoutes)
+    }
+));
+app.use(express.json());
 
-// Connect to db
-mongoose.connect(process.env.MONGO_URI)
+// API Routes
+app.use('/user', require('./routes/user'));
+app.use('/techStack', require('./routes/techStack'));
+app.use('/project', require('./routes/project'));
+app.use('/experience', require('./routes/experience'));
+app.use('/file', require('./routes/file'));
+app.use('/conversation', require('./routes/conversation'));
+app.use('/message', require('./routes/message'));
+
+// Socket.IO setup
+setupSocket(server); // 👈 Initialize socket(s)
+
+// Connect to MongoDB and start the server
+mongoose.connect(mongoUri)
     .then(() => {
-        // Listen
-        app.listen(port, () => console.log(`Connected to DB & Listening to port: ${port}!`))
+        server.listen(port, () => {
+            console.log(`✅ Connected to DB & Server listening on port ${port}`);
+        });
     })
-    .catch((error) => console.log(error))
+    .catch((error) => {
+        console.error('❌ MongoDB connection error:', error);
+    });

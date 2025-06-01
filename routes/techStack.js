@@ -1,21 +1,9 @@
 // routes/user.js
 const express = require('express');
 const multer = require('multer')
+const upload = multer({ dest: '/tmp' });
 const { getData, updateData, deleteData, storeData } = require('../controllers/TechStackController');
 const router = express.Router();
-
-// Multer Setup
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, '../react-frontend/public/techStackImg/')
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now()
-        cb(null, uniqueSuffix + file.originalname)
-    }
-})
-
-const upload = multer({ storage: storage })
 
 // Get all users from Auth0
 

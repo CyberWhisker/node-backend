@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken')
 const sendVerificationEmail = require('../utils/sendVerificationEmail')
 const { default: mongoose } = require('mongoose')
 const sendPasswordResetEmail = require('../utils/sendPasswordRequestEmail')
+const FileUpload = require('../utils/FileUploadUtil')
 
 const login = async (req, res) => {
     const { email, password } = req.body
@@ -38,7 +39,10 @@ const updateData = async (req, res) => {
         }
 
         if (req.file) {
-            updateFields.picture = `/profileImg/${req.file.filename}`
+            const savedFileId = await FileUpload.processAndSaveFile(req.file)
+            const baseUrl = `${req.protocol}://${req.get('host')}`;
+            const fileUrl = `${baseUrl}/file/${savedFileId}`;
+            updateFields.picture = fileUrl
         }
 
         const user = await Model.findByIdAndUpdate(id, updateFields, { new: true });
