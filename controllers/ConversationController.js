@@ -5,7 +5,7 @@ const getConversationById = async (req, res) => {
     const { id } = req.params
     try {
         const data = await Model.findOne({ _id: id })
-            .populate('participants')
+            .populate('participants', '-password')
             .populate('lastMessage');
         res.status(200).json(data)
     } catch (error) {
@@ -17,7 +17,7 @@ const getConversationByUserId = async (req, res) => {
     const { id } = req.params
     try {
         const data = await Model.find({ participants: id })
-            .populate('participants')
+            .populate('participants', '-password')
             .populate('lastMessage');
         res.status(200).json(data)
     } catch (error) {
@@ -39,7 +39,7 @@ const storeData = async (req, res) => {
         const existing = await Model.findOne({
             participants: { $all: sortedIncoming, $size: 2 }
         })
-            .populate('participants')
+            .populate('participants', '-password')
             .populate('lastMessage');
 
         if (existing) {
@@ -51,7 +51,7 @@ const storeData = async (req, res) => {
 
         // Populate related fields
         const data = await Model.findById(created._id)
-            .populate('participants')
+            .populate('participants', '-password')
             .populate('lastMessage');
         res.status(200).json(data);
 

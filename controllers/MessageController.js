@@ -18,9 +18,16 @@ const getDataByConversationId = async (req, res) => {
 }
 
 const storeData = async (req, res) => {
+    const newData = { ...req.body };
     try {
-        const data = await Model.create({ ...req.body });
-        res.status(200).json(data);
+        if (req?.file) {
+            const savedFileId = await FileUpload.processAndSaveFile(req.file);
+            newData.fileId = savedFileId;
+        }
+
+        const createdData = await Model.create(newData);
+
+        return res.status(201).json(createdData);
     } catch (error) {
         console.log(error);
         res.status(400).json({ error: error.message });
